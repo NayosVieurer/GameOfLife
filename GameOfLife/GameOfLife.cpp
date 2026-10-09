@@ -1,6 +1,7 @@
 #include "GameOfLife.h"
 #include <random>
 #include <iostream>
+#include <cstdint>
 
 GameOfLife::GameOfLife()
 {
