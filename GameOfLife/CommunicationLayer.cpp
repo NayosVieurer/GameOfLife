@@ -1,5 +1,6 @@
 #include "CommunicationLayer.h"
 #include <thread>
+#include <cstdint>
 
 CommunicationLayer::CommunicationLayer(size_t gridSize)
 {
