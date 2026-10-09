@@ -13,7 +13,7 @@ pipeline {
             steps {
                 // Exemple pour une solution .NET
                 sh 'dotnet restore MonProjetCS.sln'
-                sh 'dotnet build MonProjetCS.sln --configuration Release'
+                sh 'dotnet build GameOfLife.sln --configuration Release'
             }
         }
 
@@ -30,7 +30,7 @@ pipeline {
         stage('Tests') {
             steps {
                 // Exécution des tests unitaires
-                sh 'dotnet test MonProjetCS.sln'
+                sh 'dotnet test GameOfLife.sln'
                 // sh 'build/tests/unit_tests' // Pour le C++
             }
         }
