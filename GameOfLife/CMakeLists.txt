@@ -9,5 +9,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mthreads")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mthreads")
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "*.cpp" "*.h" "*.hpp")
+# Exclure explicitement le dossier de build de la liste des sources
+list(FILTER SOURCES EXCLUDE REGEX ".*build/.*")
+
 add_executable(GameOfLife ${SOURCES})
 target_include_directories(GameOfLife PRIVATE .)

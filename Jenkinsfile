@@ -22,7 +22,7 @@ pipeline {
 		sh '''
            	    cmake -B build -S . \
     	            -DCMAKE_SYSTEM_NAME=Windows \
-      	            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+      	            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++-posix \
                     -DCMAKE_BUILD_TYPE=Release
                     cmake --build build --config Release
                 '''
