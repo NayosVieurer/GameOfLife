@@ -19,8 +19,13 @@ pipeline {
         stage('Build C++ (GameOfLife)') {
             steps {
                 dir('GameOfLife') {
-                    sh 'cmake -B build -S . -DCMAKE_BUILD_TYPE=Release'
-                    sh 'cmake --build build --config Release'
+		sh '''
+           	    cmake -B build -S . \
+    	            -DCMAKE_SYSTEM_NAME=Windows \
+      	            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+                    -DCMAKE_BUILD_TYPE=Release
+                    cmake --build build --config Release
+                '''
                 }
             }
         }
