@@ -9,18 +9,16 @@ pipeline {
             }
         }
 
-        stage('Build C# (.NET)') {
+	stage('Build C# (GameOfLifeClient)') {
             steps {
-                // Exemple pour une solution .NET
-                sh 'dotnet restore GameOfLife.sln'
-                sh 'dotnet build GameOfLife.sln --configuration Release'
+                sh 'dotnet restore GameOfLifeClient/GameOfLifeClient.csproj'
+                sh 'dotnet build GameOfLifeClient/GameOfLifeClient.csproj --configuration Release'
             }
         }
 
-        stage('Build C++') {
+        stage('Build C++ (GameOfLife)') {
             steps {
-                // Exemple avec CMake sous Windows (ou sh/bash sous Linux)
-                dir('cpp-folder') {
+                dir('GameOfLife') {
                     sh 'cmake -B build -S . -DCMAKE_BUILD_TYPE=Release'
                     sh 'cmake --build build --config Release'
                 }
