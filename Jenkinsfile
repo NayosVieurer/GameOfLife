@@ -13,7 +13,7 @@ pipeline {
             steps {
                 // Exemple pour une solution .NET
                 sh 'dotnet restore GameOfLife.sln'
-                sh 'dotnet build GameOfLife.sln --configuration Release'
+                sh 'dotnet build GameOfLife.sln --configuration Release /p:EnableWindowsTargeting=true'
             }
         }
 
