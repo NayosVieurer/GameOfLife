@@ -12,7 +12,7 @@ pipeline {
         stage('Build C# (.NET)') {
             steps {
                 // Exemple pour une solution .NET
-                sh 'dotnet restore MonProjetCS.sln'
+                sh 'dotnet restore GameOfLife.sln'
                 sh 'dotnet build GameOfLife.sln --configuration Release'
             }
         }
