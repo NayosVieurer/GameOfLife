@@ -4,7 +4,7 @@
 CommunicationLayer::CommunicationLayer(size_t gridSize)
 {
 	pipe = CreateNamedPipe(
-		L"\\\\.\\pipe\\GameOfLifePipe", 
+		TEXT("\\\\.\\pipe\\GameOfLifePipe"), 
 		PIPE_ACCESS_OUTBOUND, 
 		PIPE_TYPE_MESSAGE | PIPE_WAIT, 
 		1, 
