@@ -12,8 +12,8 @@ pipeline {
         stage('Build C# (.NET)') {
             steps {
                 // Exemple pour une solution .NET
-                bat 'dotnet restore MonProjetCS.sln'
-                bat 'dotnet build MonProjetCS.sln --configuration Release'
+                sh 'dotnet restore MonProjetCS.sln'
+                sh 'dotnet build MonProjetCS.sln --configuration Release'
             }
         }
 
@@ -21,8 +21,8 @@ pipeline {
             steps {
                 // Exemple avec CMake sous Windows (ou sh/bash sous Linux)
                 dir('cpp-folder') {
-                    bat 'cmake -B build -S . -DCMAKE_BUILD_TYPE=Release'
-                    bat 'cmake --build build --config Release'
+                    sh 'cmake -B build -S . -DCMAKE_BUILD_TYPE=Release'
+                    sh 'cmake --build build --config Release'
                 }
             }
         }
@@ -30,8 +30,8 @@ pipeline {
         stage('Tests') {
             steps {
                 // Exécution des tests unitaires
-                bat 'dotnet test MonProjetCS.sln'
-                // bat 'build/tests/unit_tests' // Pour le C++
+                sh 'dotnet test MonProjetCS.sln'
+                // sh 'build/tests/unit_tests' // Pour le C++
             }
         }
     }
