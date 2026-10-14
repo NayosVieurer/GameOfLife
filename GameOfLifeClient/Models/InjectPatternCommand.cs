@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,18 +9,18 @@ namespace GameOfLifeClient.Models
 {
     public sealed class InjectPatternCommand : BaseCommand
     {
-        public override byte OpCode => 0x02;
+        public override CommandType OpCode => CommandType.InjectPattern;
         public int Row { get; init; }
         public int Col { get; init; }
         public PatternType Pattern { get; init; }
-        public override byte[] Serialize()
+
+        public override byte DataSize => 12;
+
+        protected override void SerializeData(Span<byte> buffer)
         {
-            var buffer = new byte[13]; // 1 byte for OpCode + 4 bytes for Row + 4 bytes for Col + Pattern length
-            buffer[0] = OpCode;
-            BitConverter.GetBytes(Row).CopyTo(buffer, 1);
-            BitConverter.GetBytes(Col).CopyTo(buffer, 5);
-            BitConverter.GetBytes((int)Pattern).CopyTo(buffer, 9);
-            return buffer;
+            BinaryPrimitives.WriteInt32LittleEndian(buffer[0..4], Row);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer[4..8], Col);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer[8..12], (int)Pattern);
         }
     }
 
