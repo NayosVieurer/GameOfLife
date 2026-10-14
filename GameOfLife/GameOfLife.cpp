@@ -2,10 +2,9 @@
 #include <random>
 #include <iostream>
 
-GameOfLife::GameOfLife()
+GameOfLife::GameOfLife(CommunicationLayer* comms)
 {
-	currentState.resize(ROWS * COLS, false);
-	nextState.resize(ROWS * COLS, false);
+	commLayer = comms;
 }
 
 std::vector<uint8_t> GameOfLife::GetCurrentState() const
@@ -21,37 +20,46 @@ void GameOfLife::InitializeRandomState()
 
 	for(size_t i = 0; i < GetGridSize(); ++i)
 	{
-		currentState[i] = (dis(gen) < 25) ? 255 : 0; 
+		currentState[i] = (dis(gen) < cellChances) ? 255 : 0; 
 	}
+}
+
+void GameOfLife::StartSimulation(int rows, int cols, int cellChances)
+{
+	isRunning = false;
+
+	this->rows = rows;
+	this->cols = cols;
+	this->cellChances = cellChances;
+
+	currentState.resize(rows * cols, false);
+	nextState.resize(rows * cols, false);
+
+	InitializeRandomState();
+
+	std::thread startThread([this]() {
+
+
+		while(!commLayer->IsStreamingConnected())
+		{
+			commLayer->ConnectToStreamingPipe(GetGridSize());
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+		}
+
+		isRunning = true;
+	});
+
+	startThread.detach();
 }
 
 void GameOfLife::Update()
 {
-	std::fill(nextState.begin(), nextState.end(), 0);
+	if(!isRunning)
+		return;
 
-	for(int i = 0; i < ROWS; ++i)
-	{
-		for(int j = 0; j < COLS; ++j)
-		{
-			int aliveNeighbors = GetLiveNeighbors(i, j);
-			if(currentState[i * COLS + j] == 255)
-			{
-				nextState[i * COLS + j] = aliveNeighbors == 2 || aliveNeighbors == 3 ? 255 : 0;
-			}
-			else
-			{
-				nextState[i * COLS + j] = aliveNeighbors == 3 ? 255 : 0;
-			}
-		}
-	}
-
-	int aliveCount = 0;
-	for (auto cell : currentState) {
-		if (cell == 255) aliveCount++;
-	}
-	std::cout << "Cellules vivantes au tick actuel : " << aliveCount << std::endl;
-
-	currentState.swap(nextState);
+	commLayer->SendData(currentState.data(), GetGridSize());
+	ComputeNextState();	
 }
 
 int GameOfLife::GetLiveNeighbors(int row, int col) const
@@ -64,12 +72,42 @@ int GameOfLife::GetLiveNeighbors(int row, int col) const
 			if (x == 0 && y == 0) continue;
 			int ni = row + x;
 			int nj = col + y;
-			if (ni >= 0 && ni < ROWS && nj >= 0 && nj < COLS)
+			if (ni >= 0 && ni < rows && nj >= 0 && nj < cols)
 			{
-				if (currentState[ni * COLS + nj] == 255)
+				if (currentState[ni * cols + nj] == 255)
 				liveNeighbors++;
 			}
 		}
 	}
 	return liveNeighbors;
+}
+
+void GameOfLife::ComputeNextState()
+{
+	std::fill(nextState.begin(), nextState.end(), 0);
+
+	for (int i = 0; i < rows; ++i)
+	{
+		for (int j = 0; j < cols; ++j)
+		{
+			int aliveNeighbors = GetLiveNeighbors(i, j);
+			if (currentState[i * cols + j] == 255)
+			{
+				nextState[i * cols + j] = aliveNeighbors == 2 || aliveNeighbors == 3 ? 255 : 0;
+			}
+			else
+			{
+				nextState[i * cols + j] = aliveNeighbors == 3 ? 255 : 0;
+			}
+		}
+	}
+
+	int aliveCount = 0;
+	for (auto cell : currentState) {
+		if (cell == 255) aliveCount++;
+	}
+	std::cout << "Cellules vivantes au tick actuel : " << aliveCount << std::endl;
+
+
+	currentState.swap(nextState);
 }

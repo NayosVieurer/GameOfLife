@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GameOfLifeClient.Models;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
@@ -9,17 +11,31 @@ namespace GameOfLifeClient.Services
 {
     public class PipeComm : IDisposable
     {
-        private int GridSize;
+        private int gridSize = 512 * 512;
         private const string serverName = ".";
         private const string streamPipeName = "GameOfLifeStream";
+        private const string commandPipeName = "GameOfLifeCommands";
 
         private NamedPipeClientStream streamingClient;
         private NamedPipeClientStream commandClient;
-        private readonly byte[] buffer;
+        private byte[] buffer;
 
         private CancellationTokenSource cts;
 
         public EventHandler<byte[]> OnFrameReceived;
+
+        public int GridSize 
+        { 
+            get { return gridSize; }
+            set
+            {
+                if (gridSize != value)
+                {
+                    gridSize = value;
+                }   
+                buffer = new byte[gridSize];
+            }
+        } 
 
         public PipeComm()
         {
@@ -29,18 +45,38 @@ namespace GameOfLifeClient.Services
         {
             cts = new CancellationTokenSource();
 
-            Task.Run(ConnectToPipe);
+            Task.Run(async () => commandClient = await ConnectToPipe(commandPipeName, PipeDirection.Out));
+            _ = ConnectToStreamingPipe();
         }
 
-        private async Task ConnectToPipe()
+        public async Task SendCommandAsync(BaseCommand command)
         {
-            while (!cts.Token.IsCancellationRequested && (streamingClient == null || !streamingClient.IsConnected))
+            if (commandClient == null || !commandClient.IsConnected)
+                throw new InvalidOperationException("Command pipe is not connected.");
+
+            int commandSize = 2 + command.DataSize; // OpCode (1 byte) + DataSize (1 byte) + Data
+
+            byte[] commandBuffer = ArrayPool<byte>.Shared.Rent(commandSize);
+
+            command.Serialize(commandBuffer);
+
+            ReadOnlyMemory<byte> data = commandBuffer.AsMemory(0, commandSize);
+
+            await commandClient.WriteAsync(data, cts.Token);
+            await commandClient.FlushAsync(cts.Token);
+        }
+
+        private async Task<NamedPipeClientStream> ConnectToPipe(string pipeName, PipeDirection direction)
+        {
+            while (!cts.Token.IsCancellationRequested)
             {
                 try
                 {
-                    streamingClient = new NamedPipeClientStream(".", streamPipeName, PipeDirection.In);
-                    
-                    await streamingClient.ConnectAsync(cts.Token);         
+                    var pipeToConnect = new NamedPipeClientStream(".", pipeName, direction);
+
+                    await pipeToConnect.ConnectAsync(cts.Token);
+
+                    return pipeToConnect;
                 }
                 catch (OperationCanceledException)
                 {
@@ -55,10 +91,20 @@ namespace GameOfLifeClient.Services
                 }
             }
 
-            if(streamingClient.IsConnected)
+            return null;
+        }
+
+        private async Task ConnectToStreamingPipe()
+        {
+            while(!cts.Token.IsCancellationRequested && (streamingClient == null || !streamingClient.IsConnected))
             {
-                // Start reading from the pipe
-                await ReadFromPipe();
+                streamingClient = await ConnectToPipe(streamPipeName, PipeDirection.In);
+
+                if (streamingClient.IsConnected)
+                {
+                    // Start reading from the pipe
+                    await Task.Run(ReadFromPipe);
+                }
             }
         }
 
@@ -70,7 +116,8 @@ namespace GameOfLifeClient.Services
                 {
                     int bytesRead = 0;
 
-                    while(bytesRead < GridSize)
+
+                    while (bytesRead < GridSize)
                     {
                         int read = await streamingClient.ReadAsync(buffer, bytesRead, GridSize - bytesRead, cts.Token);
                         if (read == 0)

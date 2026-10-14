@@ -30,12 +30,24 @@
     <ClCompile Include="CommunicationLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BaseCommand.cpp">
+      <Filter>Source Files\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="StartCommand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CommunicationLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseCommand.h">
+      <Filter>Header Files\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="StartCommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
