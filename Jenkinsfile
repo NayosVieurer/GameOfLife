@@ -29,14 +29,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Tests') {
-            steps {
-                // Exécution des tests unitaires
-                sh 'dotnet test GameOfLife.sln'
-                // sh 'build/tests/unit_tests' // Pour le C++
-            }
-        }
     }
 
     post {

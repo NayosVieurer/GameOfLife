@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,22 +9,19 @@ namespace GameOfLifeClient.Models
 {
     public sealed class StartSimCommand : BaseCommand
     {
-        public override byte OpCode => 0x01;
+        public override CommandType OpCode => CommandType.StartSimulation;
 
         public int Rows { get; init; }
         public int Cols { get; init; }
         public int ChanceForCell { get; init; }
 
-        public override byte[] Serialize()
+        public override byte DataSize => 12;
+
+        protected override void SerializeData(Span<byte> buffer)
         {
-            var buffer = new byte[13]; // 1 byte for OpCode + 4 bytes for Rows + 4 bytes for Cols + 4 bytes for ChanceForCell
-
-            buffer[0] = OpCode;
-            BitConverter.GetBytes(Rows).CopyTo(buffer, 1);
-            BitConverter.GetBytes(Cols).CopyTo(buffer, 5);
-            BitConverter.GetBytes(ChanceForCell).CopyTo(buffer, 9);
-
-            return buffer;
+            BinaryPrimitives.WriteInt32LittleEndian(buffer[0..4], Rows);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer[4..8], Cols);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer[8..12], ChanceForCell);
         }
     }
 }

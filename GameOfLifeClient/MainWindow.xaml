@@ -7,6 +7,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="1" Orientation="Vertical">
+            <Label Content="Number of rows"/>
+            <TextBox Text="{Binding RowAmount, Mode=TwoWay}"/>
+            <Label Content="Number of columns"/>
+            <TextBox Text="{Binding ColAmount, Mode=TwoWay}"/>
+            <Label Content="test"/>
+            <TextBox Text="{Binding CellPercentage, Mode=TwoWay}"/>
+            <Button Content="Start" Command="{Binding StartCommand}" Margin="5"/>
+        </StackPanel>
         <Image x:Name="GameImageDisplay" 
                Stretch="Uniform" 
                RenderOptions.BitmapScalingMode="NearestNeighbor"
