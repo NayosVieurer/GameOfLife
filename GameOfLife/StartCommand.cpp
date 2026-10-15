@@ -1,5 +1,6 @@
 #include "StartCommand.h"
 #include "GameOfLife.h"
+#include <cstring>
 
 StartCommand::StartCommand(const uint8_t* data)
 {
